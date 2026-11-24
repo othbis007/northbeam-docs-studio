@@ -36,5 +36,10 @@ export function writerRoutes(service: ArticleService): Router {
     res.json(service.publish(id, expectedDraftVersion));
   });
 
+  // T040: unpublish (no request body)
+  router.post('/:id/unpublish', (req, res) => {
+    res.json(service.unpublish(parseNumberParam(req.params.id)));
+  });
+
   return router;
 }
