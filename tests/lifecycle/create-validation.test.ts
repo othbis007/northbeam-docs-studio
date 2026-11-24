@@ -49,9 +49,9 @@ describe('create: required fields and slug format (FR-001, FR-002)', () => {
     }
   });
 
-  it('refuses a slug already in use with SLUG_TAKEN (replaced by the suffix bonus, T046)', () => {
+  it('gives a slug already in use the next free suffix (bonus, FR-017; replaces SLUG_TAKEN)', () => {
     service.create({ title: 'One', slug: 'guide', body: '', tags: [] });
-    expect(codeOf(() => service.create({ title: 'Two', slug: 'guide', body: '', tags: [] }))).toBe('SLUG_TAKEN');
+    expect(service.create({ title: 'Two', slug: 'guide', body: '', tags: [] }).slug).toBe('guide-2');
   });
 });
 

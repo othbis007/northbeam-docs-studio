@@ -47,12 +47,11 @@ describe('POST /api/articles', () => {
     expect(bad.body.error).toBe('VALIDATION_ERROR');
   });
 
-  it('returns 409 SLUG_TAKEN when the slug is already used (replaced by the suffix bonus, T046)', async () => {
+  it('returns 201 with the suffixed final slug when the slug is already used (bonus, FR-017)', async () => {
     await createArticle('guide');
     const res = await request(app).post('/api/articles').send({ title: 'Other', slug: 'guide', body: '', tags: [] });
-    expect(res.status).toBe(409);
-    expect(res.body.error).toBe('SLUG_TAKEN');
-    expect(res.body.message).toEqual(expect.any(String));
+    expect(res.status).toBe(201);
+    expect(res.body.slug).toBe('guide-2');
   });
 });
 
