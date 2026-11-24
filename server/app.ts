@@ -3,6 +3,7 @@ import type { Db } from './db/connection.js';
 import { AppError } from './services/errors.js';
 import { createArticleService } from './services/articleService.js';
 import { writerRoutes } from './routes/writer.js';
+import { publicRoutes } from './routes/public.js';
 
 // Express app: JSON bodies, routes, and the mapping from lifecycle errors to
 // HTTP responses (contracts/api.md).
@@ -39,6 +40,7 @@ export function createApp(db: Db): Express {
   app.use(express.json());
 
   app.use('/api/articles', writerRoutes(service));
+  app.use('/api/public/articles', publicRoutes(service));
 
   // Unknown API paths: 404 with no body.
   app.use('/api', (_req, res) => {
