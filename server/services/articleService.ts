@@ -316,6 +316,26 @@ export function createArticleService(db: Db): ArticleService {
     return toVersion(findVersionRow(id, number));
   }
 
+  // T031 (FR-008, FR-010; research.md D8): copy the version into the draft only;
+  // versions and status are untouched.
+  const restoreTx = db.transaction((id: number, number: number, expectedDraftVersion: number) => {
+    const row = findRow(id);
+    const version = findVersionRow(id, number);
+    if (row.draft_version !== expectedDraftVersion) {
+      throw staleFor(row);
+    }
+    db.prepare(`
+      UPDATE articles
+      SET draft_title = ?, draft_body = ?, draft_tags = ?, draft_version = draft_version + 1
+      WHERE id = ?
+    `).run(version.title, version.body, version.tags, id);
+  });
+
+  function restore(id: number, number: number, expectedDraftVersion: number): Article {
+    restoreTx.immediate(id, number, expectedDraftVersion);
+    return get(id);
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -332,7 +352,7 @@ export function createArticleService(db: Db): ArticleService {
     unpublish,
     listVersions,
     getVersion,
-    restore: notImplemented,
+    restore,
     deleteVersion: notImplemented,
     listPublic,
     getPublic,
