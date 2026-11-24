@@ -51,7 +51,7 @@ dependencies; nothing outside the agreed scope (constitution, principle V)
 | I. Published content is frozen | `article_versions` rows are never updated (trigger blocks every UPDATE). Publish always inserts a new row; editing only touches draft columns. | PASS |
 | II. Database is the last line of defense | CHECK on status/reference/publish date; composite FK with ON DELETE RESTRICT; triggers for frozen versions, fixed publish date, no return to draft, draft_version +1, fixed slug; publish in one transaction. The service checks the same rules first. | PASS |
 | III. Invariants proven by tests | Every rule in spec SC-001..SC-007 gets a Vitest/Supertest test; all run with `npm test`. Lifecycle tests are written before UI tests. | PASS |
-| IV. Fail loudly | Explicit codes: `400 VALIDATION_ERROR`, `409 STALE_DRAFT`, `409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`; non-public content and unknown ids answer `404` with no body. No silent overwrite thanks to `expectedDraftVersion`. | PASS |
+| IV. Fail loudly | Explicit codes: `400 VALIDATION_ERROR`, `409 STALE_DRAFT`, `409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`, `409 SLUG_TAKEN` (until the slug-suffix bonus); strict request schemas; non-public content and unknown ids answer `404` with no body. No silent overwrite thanks to `expectedDraftVersion`. | PASS |
 | V. Small and runnable | SQLite file (no server); one setup command from a fresh clone (`npm install`, which runs `setup`); no dependency added for dev running (`tsc` + `node`, Vite inside Express); out-of-scope list respected. | PASS |
 
 **Post-design re-check (after Phase 1)**: PASS. No violation found in

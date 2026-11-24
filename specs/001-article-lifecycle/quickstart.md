@@ -34,7 +34,11 @@ Endpoints are described in [contracts/api.md](./contracts/api.md); rules in
 9. **Delete**: delete version 1 → `204`; delete the referenced version →
    `409 LIVE_VERSION_DELETE_FORBIDDEN`, also after unpublish.
 10. **Persistence**: stop and restart `npm run dev` → all data is still there.
-11. **Bonus**: publish without changes → no new version; create a second article with the
+11. **Fixed slug**: save the draft with a `slug` field → `400 VALIDATION_ERROR`; the slug
+    is unchanged.
+12. **Slug already in use (before the bonus)**: create a second article with the same
+    slug → `409 SLUG_TAKEN`.
+13. **Bonus**: publish without changes → no new version; create a second article with the
     same slug → it gets `-2` and the final slug is returned.
 
 Each scenario maps to automated tests run by `npm test`.

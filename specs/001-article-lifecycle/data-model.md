@@ -9,15 +9,18 @@ One row per article.
 
 | Column | Meaning | Rules |
 |---|---|---|
-| `id` | article id | primary key |
+| `id` | article id | INTEGER primary key, auto-increment |
 | `slug` | public address | UNIQUE; lowercase letters, digits, hyphens (FR-002); never changes (trigger) |
 | `status` | `draft`, `published`, `unpublished` | cannot go back to `draft` (trigger) |
 | `draft_title` | draft title | required, not empty (FR-001) |
 | `draft_body` | draft Markdown body | may be empty |
 | `draft_tags` | draft tags | JSON array, may be empty |
-| `draft_version` | counter of draft changes | every change of a draft column increases it by exactly one (trigger) |
+| `draft_version` | counter of draft changes | starts at 1; every change of a draft column increases it by exactly one (trigger) |
 | `last_published_version_id` | version the article refers to | NULL only for `draft`; composite FK, see below |
 | `published_at` | first publish date | NULL only for `draft`; never changes once set (trigger) |
+
+**Naming**: the spec's "first publish date" is the column `published_at` and the API field
+`publishedAt`.
 
 **CHECK** (D3):
 - `status = 'draft'` → `last_published_version_id IS NULL` and `published_at IS NULL`
@@ -32,10 +35,10 @@ One row per publish, never updated.
 
 | Column | Meaning | Rules |
 |---|---|---|
-| `id` | version id | primary key |
+| `id` | version id | INTEGER primary key, auto-increment |
 | `article_id` | owning article | FK → `articles.id` |
 | `version_number` | 1, 2, 3... | UNIQUE (`article_id`, `version_number`) |
-| `title` | frozen title | copied from the draft at publish |
+| `title` | frozen title | copied from the draft at publish; not empty |
 | `body` | frozen body | copied from the draft at publish |
 | `tags` | frozen tags | JSON array copied from the draft at publish |
 | `created_at` | publish time of this version | set at insert |
@@ -54,7 +57,7 @@ One row per publish, never updated.
 
 | Operation | From | Effect | Refused when |
 |---|---|---|---|
-| create | — | new `draft` row, `draft_version` initial value | missing title/slug, bad slug (`400`); slug taken (bonus: suffix) |
+| create | — | new `draft` row, `draft_version` = 1 | missing title/slug, bad slug (`400`); slug taken (`409 SLUG_TAKEN`, replaced by the suffix once the bonus is done) |
 | save draft | any | draft columns updated, `draft_version` + 1 | outdated copy (`409 STALE_DRAFT`) |
 | publish | any | new version (highest + 1), reference moved, `published_at` set if empty, status `published` | outdated copy (`409 STALE_DRAFT`) |
 | publish, no change (bonus) | `published` / `unpublished` | no new version; status `published` | outdated copy |

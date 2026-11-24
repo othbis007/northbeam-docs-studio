@@ -101,8 +101,11 @@ the `/speckit-plan` input and from choices confirmed by the user during planning
 ## D12. Error responses
 
 - **Decision** (agreed with the user): `400 VALIDATION_ERROR`, `409 STALE_DRAFT`,
-  `409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`; `404` with no body for
-  readers (draft-only, unpublished, unknown slug) and for unknown ids on the writer side.
+  `409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`, `409 SLUG_TAKEN` (slug
+  already in use, until the slug-suffix bonus replaces it); `404` with no body for readers
+  (draft-only, unpublished, unknown slug) and for unknown ids on the writer side.
+- Request schemas are strict: unknown fields (for example `slug` on save draft) are refused
+  with `400 VALIDATION_ERROR` instead of being silently ignored (FR-002).
 - **Rationale**: clear codes for unsafe operations; non-public content reported as not
   found. Constitution principle IV.
 
