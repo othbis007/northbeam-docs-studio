@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { ArticleService } from '../services/articleService.js';
-import { createSchema, draftSchema, parseBody, parseNumberParam } from './schemas.js';
+import { createSchema, draftSchema, expectedVersionSchema, parseBody, parseNumberParam } from './schemas.js';
 
 // Writer routes (contracts/api.md). Routes only validate input; every rule is
 // decided in articleService.
@@ -27,6 +27,13 @@ export function writerRoutes(service: ArticleService): Router {
     const id = parseNumberParam(req.params.id);
     const input = parseBody(draftSchema, req.body);
     res.json(service.saveDraft(id, input));
+  });
+
+  // T039: publish (returns the article with lastPublishedVersionNumber)
+  router.post('/:id/publish', (req, res) => {
+    const id = parseNumberParam(req.params.id);
+    const { expectedDraftVersion } = parseBody(expectedVersionSchema, req.body);
+    res.json(service.publish(id, expectedDraftVersion));
   });
 
   return router;
