@@ -1,6 +1,8 @@
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import type { Db } from './db/connection.js';
 import { AppError } from './services/errors.js';
+import { createArticleService } from './services/articleService.js';
+import { writerRoutes } from './routes/writer.js';
 
 // Express app: JSON bodies, routes, and the mapping from lifecycle errors to
 // HTTP responses (contracts/api.md).
@@ -31,9 +33,12 @@ function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFun
   res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Unexpected server error.' });
 }
 
-export function createApp(_db: Db): Express {
+export function createApp(db: Db): Express {
+  const service = createArticleService(db);
   const app = express();
   app.use(express.json());
+
+  app.use('/api/articles', writerRoutes(service));
 
   // Unknown API paths: 404 with no body.
   app.use('/api', (_req, res) => {
