@@ -54,6 +54,33 @@ export function Editor({ id }: { id: number }) {
     }
   }
 
+  // US1 / US3: publish the saved draft, or unpublish. Errors (STALE_DRAFT,
+  // ARTICLE_NOT_PUBLISHED) are shown with their message.
+  async function onPublish() {
+    if (!article) return;
+    setError(null);
+    setInfo(null);
+    try {
+      const published = await api.publish(article.id, article.draftVersion);
+      show(published);
+      setInfo(`Published. Readers now see version ${published.lastPublishedVersionNumber}.`);
+    } catch (err) {
+      fail(err);
+    }
+  }
+
+  async function onUnpublish() {
+    if (!article) return;
+    setError(null);
+    setInfo(null);
+    try {
+      show(await api.unpublish(article.id));
+      setInfo('Unpublished. Readers no longer see this article; its versions are kept.');
+    } catch (err) {
+      fail(err);
+    }
+  }
+
   // STALE_DRAFT: load the current draft (the writer's unsaved changes are replaced).
   async function onLoadCurrent() {
     if (!article) return;
@@ -93,6 +120,8 @@ export function Editor({ id }: { id: number }) {
       </div>
 
       <button onClick={onSave}>Save draft</button>
+      <button onClick={onPublish}>Publish saved draft</button>
+      <button onClick={onUnpublish}>Unpublish</button>
 
       {error && <p className="error">{error}</p>}
       {current && (
