@@ -1,4 +1,5 @@
 import type { Db } from '../db/connection.js';
+import { notFound, slugTaken, validationError } from './errors.js';
 
 // Every lifecycle rule lives here (plan.md); the database enforces the same
 // rules a second time (schema.sql).
@@ -72,15 +73,113 @@ export interface ArticleService {
   getPublic(slug: string): PublicArticle;
 }
 
+interface ArticleRow {
+  id: number;
+  slug: string;
+  status: Status;
+  draft_title: string;
+  draft_body: string;
+  draft_tags: string;
+  draft_version: number;
+  last_published_version_id: number | null;
+  last_published_version_number: number | null;
+  published_at: string | null;
+}
+
+const SLUG_PATTERN = /^[a-z0-9-]+$/;
+
 const notImplemented = (): never => {
   throw new Error('not implemented');
 };
 
-export function createArticleService(_db: Db): ArticleService {
+// FR-001: title required, not blank.
+function checkTitle(title: unknown): string {
+  if (typeof title !== 'string' || title.trim().length === 0) {
+    throw validationError('Title is required.');
+  }
+  return title;
+}
+
+function checkContent(body: unknown, tags: unknown): { body: string; tags: string[] } {
+  if (typeof body !== 'string') {
+    throw validationError('Body must be text.');
+  }
+  if (!Array.isArray(tags) || !tags.every((t) => typeof t === 'string')) {
+    throw validationError('Tags must be a list of text values.');
+  }
+  return { body, tags };
+}
+
+function isUniqueSlugError(e: unknown): boolean {
+  const err = e as { code?: string; message?: string };
+  return err.code === 'SQLITE_CONSTRAINT_UNIQUE' && (err.message ?? '').includes('articles.slug');
+}
+
+function toArticle(row: ArticleRow): Article {
   return {
-    create: notImplemented,
-    get: notImplemented,
-    list: notImplemented,
+    id: row.id,
+    slug: row.slug,
+    status: row.status,
+    title: row.draft_title,
+    body: row.draft_body,
+    tags: JSON.parse(row.draft_tags) as string[],
+    draftVersion: row.draft_version,
+    lastPublishedVersionNumber: row.last_published_version_number,
+    publishedAt: row.published_at,
+  };
+}
+
+export function createArticleService(db: Db): ArticleService {
+  const selectArticle = db.prepare(`
+    SELECT a.*, v.version_number AS last_published_version_number
+    FROM articles a
+    LEFT JOIN article_versions v ON v.id = a.last_published_version_id
+    WHERE a.id = ?
+  `);
+
+  function findRow(id: number): ArticleRow {
+    const row = selectArticle.get(id) as ArticleRow | undefined;
+    if (!row) {
+      throw notFound();
+    }
+    return row;
+  }
+
+  // T025 (FR-001, FR-002): create a draft; slug already in use -> SLUG_TAKEN.
+  function create(input: CreateInput): Article {
+    const title = checkTitle(input.title);
+    if (typeof input.slug !== 'string' || !SLUG_PATTERN.test(input.slug)) {
+      throw validationError('Slug is required and may only contain lowercase letters, digits and hyphens.');
+    }
+    const { body, tags } = checkContent(input.body, input.tags);
+    try {
+      const result = db
+        .prepare('INSERT INTO articles (slug, draft_title, draft_body, draft_tags) VALUES (?, ?, ?, ?)')
+        .run(input.slug, title, body, JSON.stringify(tags));
+      return toArticle(findRow(Number(result.lastInsertRowid)));
+    } catch (e) {
+      if (isUniqueSlugError(e)) {
+        throw slugTaken(input.slug);
+      }
+      throw e;
+    }
+  }
+
+  function get(id: number): Article {
+    return toArticle(findRow(id));
+  }
+
+  function list(): ArticleSummary[] {
+    const rows = db
+      .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
+      .all() as Pick<ArticleRow, 'id' | 'slug' | 'status' | 'draft_title'>[];
+    return rows.map((r) => ({ id: r.id, slug: r.slug, status: r.status, title: r.draft_title }));
+  }
+
+  return {
+    create,
+    get,
+    list,
     saveDraft: notImplemented,
     publish: notImplemented,
     unpublish: notImplemented,
