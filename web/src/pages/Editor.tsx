@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError, parseTags, type Article, type DraftSnapshot } from '../api';
 import { renderMarkdown } from '../markdown';
+import { HistoryPanel } from '../components/HistoryPanel';
 
 // Writer: edit the draft with a Markdown preview (US2). Every save sends
 // expectedDraftVersion; an outdated copy is refused with STALE_DRAFT.
@@ -133,6 +134,15 @@ export function Editor({ id }: { id: number }) {
         </div>
       )}
       {info && <p className="info">{info}</p>}
+
+      <HistoryPanel
+        article={article}
+        onChange={(a) => {
+          show(a);
+          setError(null);
+          setInfo('Version restored into the draft. Nothing was published.');
+        }}
+      />
     </>
   );
 }
