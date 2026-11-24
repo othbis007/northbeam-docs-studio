@@ -93,17 +93,17 @@ the database enforces the rule, a direct SQL write that the database must refuse
 
 **Purpose**: routes only validate input (Zod) and map errors (contracts/api.md).
 
-- [ ] T033 [P] [US1] Write API tests in `tests/api/writer.test.ts` with Supertest: status codes and bodies of every writer endpoint, including `400` (also when `slug` is sent to save draft), `404` with no body, and the `409` codes (contracts/api.md)
-- [ ] T034 [P] [US1] Write API tests in `tests/api/public.test.ts` with Supertest: public list and read; `404` with no body for draft-only, unpublished and unknown slug (FR-013)
-- [ ] T035 [P] [US1] Create Zod request schemas in `server/routes/schemas.ts` for create, save draft, publish and restore (`expectedDraftVersion`); all schemas strict, so unknown fields such as `slug` on save draft are refused with `VALIDATION_ERROR` (FR-002)
-- [ ] T036 [US1] Create `server/app.ts`: Express app, JSON body parsing, error mapping (`VALIDATION_ERROR` → 400, `NOT_FOUND` → 404 with no body, `STALE_DRAFT` / `LIVE_VERSION_DELETE_FORBIDDEN` / `ARTICLE_NOT_PUBLISHED` / `SLUG_TAKEN` → 409 with `error` and `message`)
-- [ ] T037 [US1] Add create, list and get routes in `server/routes/writer.ts` (contracts/api.md); the writer article list serves the writer UI of US1 (T051)
-- [ ] T038 [US2] Add `PUT /api/articles/:id/draft` in `server/routes/writer.ts`
-- [ ] T039 [US1] Add `POST /api/articles/:id/publish` in `server/routes/writer.ts`
-- [ ] T040 [US3] Add `POST /api/articles/:id/unpublish` in `server/routes/writer.ts`
-- [ ] T041 [US4] Add versions list, get, restore and delete routes in `server/routes/writer.ts`
-- [ ] T042 [P] [US1] Add public list and read routes in `server/routes/public.ts`
-- [ ] T043 [US1] Create `server/index.ts`: open `data/northbeam.db`, start the Express app on one port (Vite middleware added in T050)
+- [X] T033 [P] [US1] Write API tests in `tests/api/writer.test.ts` with Supertest: status codes and bodies of every writer endpoint, including `400` (also when `slug` is sent to save draft), `404` with no body, and the `409` codes (contracts/api.md)
+- [X] T034 [P] [US1] Write API tests in `tests/api/public.test.ts` with Supertest: public list and read; `404` with no body for draft-only, unpublished and unknown slug (FR-013)
+- [X] T035 [P] [US1] Create Zod request schemas in `server/routes/schemas.ts` for create, save draft, publish and restore (`expectedDraftVersion`); all schemas strict, so unknown fields such as `slug` on save draft are refused with `VALIDATION_ERROR` (FR-002)
+- [X] T036 [US1] Create `server/app.ts`: Express app, JSON body parsing, error mapping (`VALIDATION_ERROR` → 400, `NOT_FOUND` → 404 with no body, `STALE_DRAFT` / `LIVE_VERSION_DELETE_FORBIDDEN` / `ARTICLE_NOT_PUBLISHED` / `SLUG_TAKEN` → 409 with `error` and `message`)
+- [X] T037 [US1] Add create, list and get routes in `server/routes/writer.ts` (contracts/api.md); the writer article list serves the writer UI of US1 (T051)
+- [X] T038 [US2] Add `PUT /api/articles/:id/draft` in `server/routes/writer.ts`
+- [X] T039 [US1] Add `POST /api/articles/:id/publish` in `server/routes/writer.ts`
+- [X] T040 [US3] Add `POST /api/articles/:id/unpublish` in `server/routes/writer.ts`
+- [X] T041 [US4] Add versions list, get, restore and delete routes in `server/routes/writer.ts`
+- [X] T042 [P] [US1] Add public list and read routes in `server/routes/public.ts`
+- [X] T043 [US1] Create `server/index.ts`: open `data/northbeam.db`, start the Express app on one port (Vite middleware added in T050)
 
 **Checkpoint**: all tests pass, including API tests.
 
