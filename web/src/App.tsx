@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WriterList } from './pages/WriterList';
 
 // Minimal hash routing (no router dependency):
 //   #/              writer: article list
@@ -29,7 +30,7 @@ function Page({ hash }: { hash: string }) {
   if (article) {
     return <p className="muted">Article {article[1]}.</p>;
   }
-  return <p className="muted">Writer article list.</p>;
+  return <WriterList />;
 }
 
 export function App() {
