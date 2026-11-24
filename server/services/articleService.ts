@@ -1,5 +1,12 @@
 import type { Db } from '../db/connection.js';
-import { articleNotPublished, notFound, slugTaken, staleDraft, validationError } from './errors.js';
+import {
+  articleNotPublished,
+  liveVersionDeleteForbidden,
+  notFound,
+  slugTaken,
+  staleDraft,
+  validationError,
+} from './errors.js';
 
 // Every lifecycle rule lives here (plan.md); the database enforces the same
 // rules a second time (schema.sql).
@@ -87,10 +94,6 @@ interface ArticleRow {
 }
 
 const SLUG_PATTERN = /^[a-z0-9-]+$/;
-
-const notImplemented = (): never => {
-  throw new Error('not implemented');
-};
 
 // FR-001: title required, not blank.
 function checkTitle(title: unknown): string {
@@ -336,6 +339,21 @@ export function createArticleService(db: Db): ArticleService {
     return get(id);
   }
 
+  // T032 (FR-009): the referenced version can never be deleted (the foreign key
+  // refuses it too).
+  const deleteTx = db.transaction((id: number, number: number) => {
+    const row = findRow(id);
+    const version = findVersionRow(id, number);
+    if (version.id === row.last_published_version_id) {
+      throw liveVersionDeleteForbidden();
+    }
+    db.prepare('DELETE FROM article_versions WHERE id = ?').run(version.id);
+  });
+
+  function deleteVersion(id: number, number: number): void {
+    deleteTx.immediate(id, number);
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -353,7 +371,7 @@ export function createArticleService(db: Db): ArticleService {
     listVersions,
     getVersion,
     restore,
-    deleteVersion: notImplemented,
+    deleteVersion,
     listPublic,
     getPublic,
   };

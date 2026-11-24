@@ -76,14 +76,14 @@ the database enforces the rule, a direct SQL write that the database must refuse
 
 **Purpose**: every lifecycle rule in `server/services/articleService.ts` (research.md D1–D10).
 
-- [ ] T025 [US1] Implement create and get in `server/services/articleService.ts`: validate title and slug per data-model.md `articles.draft_title`, `articles.slug`; new row with status `draft` and `articles.draft_version` = 1 (data-model.md); a slug already in use refused with `SLUG_TAKEN` until T047 (FR-001, FR-002)
-- [ ] T026 [US2] Implement save draft in `server/services/articleService.ts`: UPDATE draft columns and `draft_version` + 1 only where `draft_version` = `expectedDraftVersion`, otherwise `STALE_DRAFT` with the current draft (FR-003, FR-010; research.md D7)
-- [ ] T027 [US1] Implement publish in `server/services/articleService.ts` in one immediate transaction: check `draft_version`, next number = highest + 1, insert version, move `last_published_version_id`, set `published_at` only if empty, status `published` (FR-004, FR-005, FR-015; research.md D6)
-- [ ] T028 [US3] Implement unpublish in `server/services/articleService.ts`: status `unpublished` only; refuse with `ARTICLE_NOT_PUBLISHED` when not published (FR-006; research.md D9)
-- [ ] T029 [US1] Implement public list and public read in `server/services/articleService.ts`: join on `last_published_version_id` with status `published`, newest `published_at` first; anything else not found (FR-011, FR-012, FR-013; research.md D10)
-- [ ] T030 [US4] Implement list versions (newest first) and get version in `server/services/articleService.ts` (FR-007)
-- [ ] T031 [US4] Implement restore in `server/services/articleService.ts`: copy version title, body, tags into draft columns with the `expectedDraftVersion` check and `draft_version` + 1; no change to versions or status (FR-008, FR-010; research.md D8)
-- [ ] T032 [US4] Implement delete version in `server/services/articleService.ts`: refuse with `LIVE_VERSION_DELETE_FORBIDDEN` when it is the referenced version, otherwise delete (FR-009)
+- [X] T025 [US1] Implement create and get in `server/services/articleService.ts`: validate title and slug per data-model.md `articles.draft_title`, `articles.slug`; new row with status `draft` and `articles.draft_version` = 1 (data-model.md); a slug already in use refused with `SLUG_TAKEN` until T047 (FR-001, FR-002)
+- [X] T026 [US2] Implement save draft in `server/services/articleService.ts`: UPDATE draft columns and `draft_version` + 1 only where `draft_version` = `expectedDraftVersion`, otherwise `STALE_DRAFT` with the current draft (FR-003, FR-010; research.md D7)
+- [X] T027 [US1] Implement publish in `server/services/articleService.ts` in one immediate transaction: check `draft_version`, next number = highest + 1, insert version, move `last_published_version_id`, set `published_at` only if empty, status `published` (FR-004, FR-005, FR-015; research.md D6)
+- [X] T028 [US3] Implement unpublish in `server/services/articleService.ts`: status `unpublished` only; refuse with `ARTICLE_NOT_PUBLISHED` when not published (FR-006; research.md D9)
+- [X] T029 [US1] Implement public list and public read in `server/services/articleService.ts`: join on `last_published_version_id` with status `published`, newest `published_at` first; anything else not found (FR-011, FR-012, FR-013; research.md D10)
+- [X] T030 [US4] Implement list versions (newest first) and get version in `server/services/articleService.ts` (FR-007)
+- [X] T031 [US4] Implement restore in `server/services/articleService.ts`: copy version title, body, tags into draft columns with the `expectedDraftVersion` check and `draft_version` + 1; no change to versions or status (FR-008, FR-010; research.md D8)
+- [X] T032 [US4] Implement delete version in `server/services/articleService.ts`: refuse with `LIVE_VERSION_DELETE_FORBIDDEN` when it is the referenced version, otherwise delete (FR-009)
 
 **Checkpoint**: all Phase 2 tests pass with `npm test`.
 
