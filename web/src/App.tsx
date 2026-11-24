@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { WriterList } from './pages/WriterList';
+import { Editor } from './pages/Editor';
 
 // Minimal hash routing (no router dependency):
 //   #/              writer: article list
@@ -22,7 +23,7 @@ function Page({ hash }: { hash: string }) {
   const editor = path.match(/^\/articles\/(\d+)$/);
   const article = path.match(/^\/public\/([a-z0-9-]+)$/);
   if (editor) {
-    return <p className="muted">Editor for article {editor[1]}.</p>;
+    return <Editor key={editor[1]} id={Number(editor[1])} />;
   }
   if (path === '/public') {
     return <p className="muted">Published articles.</p>;
