@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { ArticleService } from '../services/articleService.js';
-import { createSchema, parseBody, parseNumberParam } from './schemas.js';
+import { createSchema, draftSchema, parseBody, parseNumberParam } from './schemas.js';
 
 // Writer routes (contracts/api.md). Routes only validate input; every rule is
 // decided in articleService.
@@ -20,6 +20,13 @@ export function writerRoutes(service: ArticleService): Router {
 
   router.get('/:id', (req, res) => {
     res.json(service.get(parseNumberParam(req.params.id)));
+  });
+
+  // T038: save draft (no slug accepted, FR-002)
+  router.put('/:id/draft', (req, res) => {
+    const id = parseNumberParam(req.params.id);
+    const input = parseBody(draftSchema, req.body);
+    res.json(service.saveDraft(id, input));
   });
 
   return router;
