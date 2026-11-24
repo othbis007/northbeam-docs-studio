@@ -191,6 +191,37 @@ export function createArticleService(db: Db): ArticleService {
     return get(id);
   }
 
+  // T027 (FR-004, FR-005, FR-015; research.md D6): one immediate transaction.
+  // Either the version is inserted and the reference moved, or nothing changes.
+  const publishTx = db.transaction((id: number, expectedDraftVersion: number) => {
+    const row = findRow(id);
+    if (row.draft_version !== expectedDraftVersion) {
+      throw staleFor(row);
+    }
+    const { next } = db
+      .prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next FROM article_versions WHERE article_id = ?')
+      .get(id) as { next: number };
+    const now = new Date().toISOString();
+    const version = db
+      .prepare(`
+        INSERT INTO article_versions (article_id, version_number, title, body, tags, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `)
+      .run(id, next, row.draft_title, row.draft_body, row.draft_tags, now);
+    db.prepare(`
+      UPDATE articles
+      SET status = 'published',
+          last_published_version_id = ?,
+          published_at = COALESCE(published_at, ?)
+      WHERE id = ?
+    `).run(version.lastInsertRowid, now, id);
+  });
+
+  function publish(id: number, expectedDraftVersion: number): Article {
+    publishTx.immediate(id, expectedDraftVersion);
+    return get(id);
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -203,7 +234,7 @@ export function createArticleService(db: Db): ArticleService {
     get,
     list,
     saveDraft,
-    publish: notImplemented,
+    publish,
     unpublish: notImplemented,
     listVersions: notImplemented,
     getVersion: notImplemented,
