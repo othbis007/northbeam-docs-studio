@@ -41,5 +41,26 @@ export function writerRoutes(service: ArticleService): Router {
     res.json(service.unpublish(parseNumberParam(req.params.id)));
   });
 
+  // T041: versions list, get, restore, delete
+  router.get('/:id/versions', (req, res) => {
+    res.json(service.listVersions(parseNumberParam(req.params.id)));
+  });
+
+  router.get('/:id/versions/:n', (req, res) => {
+    res.json(service.getVersion(parseNumberParam(req.params.id), parseNumberParam(req.params.n)));
+  });
+
+  router.post('/:id/versions/:n/restore', (req, res) => {
+    const id = parseNumberParam(req.params.id);
+    const n = parseNumberParam(req.params.n);
+    const { expectedDraftVersion } = parseBody(expectedVersionSchema, req.body);
+    res.json(service.restore(id, n, expectedDraftVersion));
+  });
+
+  router.delete('/:id/versions/:n', (req, res) => {
+    service.deleteVersion(parseNumberParam(req.params.id), parseNumberParam(req.params.n));
+    res.status(204).end();
+  });
+
   return router;
 }
