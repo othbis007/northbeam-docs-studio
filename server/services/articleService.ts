@@ -1,5 +1,5 @@
 import type { Db } from '../db/connection.js';
-import { notFound, slugTaken, validationError } from './errors.js';
+import { notFound, slugTaken, staleDraft, validationError } from './errors.js';
 
 // Every lifecycle rule lives here (plan.md); the database enforces the same
 // rules a second time (schema.sql).
@@ -169,6 +169,28 @@ export function createArticleService(db: Db): ArticleService {
     return toArticle(findRow(id));
   }
 
+  function staleFor(row: ArticleRow) {
+    const a = toArticle(row);
+    return staleDraft({ title: a.title, body: a.body, tags: a.tags, draftVersion: a.draftVersion });
+  }
+
+  // T026 (FR-003, FR-010): the UPDATE only applies if the writer's copy is current.
+  function saveDraft(id: number, input: DraftInput): Article {
+    const title = checkTitle(input.title);
+    const { body, tags } = checkContent(input.body, input.tags);
+    const result = db
+      .prepare(`
+        UPDATE articles
+        SET draft_title = ?, draft_body = ?, draft_tags = ?, draft_version = draft_version + 1
+        WHERE id = ? AND draft_version = ?
+      `)
+      .run(title, body, JSON.stringify(tags), id, input.expectedDraftVersion);
+    if (result.changes === 0) {
+      throw staleFor(findRow(id));
+    }
+    return get(id);
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -180,7 +202,7 @@ export function createArticleService(db: Db): ArticleService {
     create,
     get,
     list,
-    saveDraft: notImplemented,
+    saveDraft,
     publish: notImplemented,
     unpublish: notImplemented,
     listVersions: notImplemented,
