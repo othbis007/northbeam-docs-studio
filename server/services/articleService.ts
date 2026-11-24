@@ -275,6 +275,47 @@ export function createArticleService(db: Db): ArticleService {
     };
   }
 
+  // T030 (FR-007): versions newest first; any version can be opened.
+  interface VersionRow {
+    id: number;
+    version_number: number;
+    title: string;
+    body: string;
+    tags: string;
+    created_at: string;
+  }
+
+  const toVersion = (r: VersionRow): Version => ({
+    number: r.version_number,
+    title: r.title,
+    body: r.body,
+    tags: JSON.parse(r.tags) as string[],
+    createdAt: r.created_at,
+  });
+
+  function findVersionRow(id: number, number: number): VersionRow {
+    const r = db
+      .prepare('SELECT * FROM article_versions WHERE article_id = ? AND version_number = ?')
+      .get(id, number) as VersionRow | undefined;
+    if (!r) {
+      throw notFound();
+    }
+    return r;
+  }
+
+  function listVersions(id: number): Version[] {
+    findRow(id);
+    const rows = db
+      .prepare('SELECT * FROM article_versions WHERE article_id = ? ORDER BY version_number DESC')
+      .all(id) as VersionRow[];
+    return rows.map(toVersion);
+  }
+
+  function getVersion(id: number, number: number): Version {
+    findRow(id);
+    return toVersion(findVersionRow(id, number));
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -289,8 +330,8 @@ export function createArticleService(db: Db): ArticleService {
     saveDraft,
     publish,
     unpublish,
-    listVersions: notImplemented,
-    getVersion: notImplemented,
+    listVersions,
+    getVersion,
     restore: notImplemented,
     deleteVersion: notImplemented,
     listPublic,
