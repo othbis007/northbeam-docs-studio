@@ -33,17 +33,17 @@ enough for one commit.
 **Purpose**: TypeScript project, scripts, database connection with foreign keys on, schema
 with all constraints and triggers.
 
-- [ ] T001 Create `package.json` with dependencies from plan.md (express, zod, better-sqlite3, react, react-dom, marked, dompurify; dev: typescript, vite, vitest, supertest and needed type packages) and scripts `setup`, `postinstall` (runs `setup`), `dev` (`tsc` then `node`), `test` (`vitest run`) per research.md D13, D14
-- [ ] T002 [P] Create `tsconfig.json` for `server/` (Node 22+ target, output folder for `tsc`) and `web/tsconfig.json` for the React app
-- [ ] T003 [P] Create `vitest.config.ts` at repository root covering `tests/**/*.test.ts`
-- [ ] T004 [P] Create `.gitignore` entries for `node_modules/`, the `tsc` output folder and `data/` (research.md D13)
-- [ ] T005 Write tables in `server/db/schema.sql`: `articles` and `article_versions` with CHECK on status/reference/publish date, slug format, non-empty title in both tables, UNIQUE (`article_id`, `version_number`), UNIQUE (`article_id`, `id`), composite FK ON DELETE RESTRICT — fields per data-model.md `articles.id`, `article_versions.id`, `articles.slug`, `articles.status`, `articles.draft_title`, `articles.draft_body`, `articles.draft_tags`, `articles.draft_version`, `articles.last_published_version_id`, `articles.published_at`, `article_versions.article_id`, `article_versions.version_number`, `article_versions.title`, `article_versions.body`, `article_versions.tags`, `article_versions.created_at`
-- [ ] T006 Add triggers to `server/db/schema.sql` per research.md D5: refuse any UPDATE on `article_versions`; `articles.published_at` never changes once set; `articles.status` never returns to `draft`; any draft-column change requires `articles.draft_version` = old + 1; `articles.slug` never changes (data-model.md)
-- [ ] T007 Create `server/db/connection.ts`: open a better-sqlite3 database from a file path, run `PRAGMA foreign_keys = ON`, apply `server/db/schema.sql` only if tables do not exist (research.md D4, D13)
-- [ ] T008 Create `server/db/setup.ts` used by `npm run setup`: create `data/` and `data/northbeam.db`, apply the schema, never erase existing data (research.md D13)
-- [ ] T009 [P] Create `tests/helpers/db.ts`: a fresh SQLite database with the same schema for each test, in memory by default, with an option for a temporary file that can be closed and reopened (used by T013, T024) (research.md D13)
-- [ ] T010 [P] Create `server/services/errors.ts`: error types for `VALIDATION_ERROR`, `NOT_FOUND`, `STALE_DRAFT` (with current draft), `LIVE_VERSION_DELETE_FORBIDDEN`, `ARTICLE_NOT_PUBLISHED`, `SLUG_TAKEN`, each with a clear message (contracts/api.md)
-- [ ] T011 Create `server/services/articleService.ts` with every operation from data-model.md "State transitions" plus public list/read, each throwing "not implemented", so tests compile and fail
+- [X] T001 Create `package.json` with dependencies from plan.md (express, zod, better-sqlite3, react, react-dom, marked, dompurify; dev: typescript, vite, vitest, supertest and needed type packages) and scripts `setup`, `postinstall` (runs `setup`), `dev` (`tsc` then `node`), `test` (`vitest run`) per research.md D13, D14
+- [X] T002 [P] Create `tsconfig.json` for `server/` (Node 22+ target, output folder for `tsc`) and `web/tsconfig.json` for the React app
+- [X] T003 [P] Create `vitest.config.ts` at repository root covering `tests/**/*.test.ts`
+- [X] T004 [P] Create `.gitignore` entries for `node_modules/`, the `tsc` output folder and `data/` (research.md D13)
+- [X] T005 Write tables in `server/db/schema.sql`: `articles` and `article_versions` with CHECK on status/reference/publish date, slug format, non-empty title in both tables, UNIQUE (`article_id`, `version_number`), UNIQUE (`article_id`, `id`), composite FK ON DELETE RESTRICT — fields per data-model.md `articles.id`, `article_versions.id`, `articles.slug`, `articles.status`, `articles.draft_title`, `articles.draft_body`, `articles.draft_tags`, `articles.draft_version`, `articles.last_published_version_id`, `articles.published_at`, `article_versions.article_id`, `article_versions.version_number`, `article_versions.title`, `article_versions.body`, `article_versions.tags`, `article_versions.created_at`
+- [X] T006 Add triggers to `server/db/schema.sql` per research.md D5: refuse any UPDATE on `article_versions`; `articles.published_at` never changes once set; `articles.status` never returns to `draft`; any draft-column change requires `articles.draft_version` = old + 1; `articles.slug` never changes (data-model.md)
+- [X] T007 Create `server/db/connection.ts`: open a better-sqlite3 database from a file path, run `PRAGMA foreign_keys = ON`, apply `server/db/schema.sql` only if tables do not exist (research.md D4, D13)
+- [X] T008 Create `server/db/setup.ts` used by `npm run setup`: create `data/` and `data/northbeam.db`, apply the schema, never erase existing data (research.md D13)
+- [X] T009 [P] Create `tests/helpers/db.ts`: a fresh SQLite database with the same schema for each test, in memory by default, with an option for a temporary file that can be closed and reopened (used by T013, T024) (research.md D13)
+- [X] T010 [P] Create `server/services/errors.ts`: error types for `VALIDATION_ERROR`, `NOT_FOUND`, `STALE_DRAFT` (with current draft), `LIVE_VERSION_DELETE_FORBIDDEN`, `ARTICLE_NOT_PUBLISHED`, `SLUG_TAKEN`, each with a clear message (contracts/api.md)
+- [X] T011 Create `server/services/articleService.ts` with every operation from data-model.md "State transitions" plus public list/read, each throwing "not implemented", so tests compile and fail
 
 **Checkpoint**: `npm install` creates the database; `npm test` runs (no tests yet).
 
