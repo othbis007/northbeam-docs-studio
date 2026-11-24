@@ -124,14 +124,14 @@ the database enforces the rule, a direct SQL write that the database must refuse
 
 **Purpose**: minimal React + Vite UI (plan.md); Markdown preview with marked + DOMPurify.
 
-- [ ] T048 [P] [US1] Create `web/index.html`, `web/src/main.tsx` and `web/src/App.tsx` with routes for writer pages and public pages
-- [ ] T049 [P] [US1] Create `web/src/api.ts`: calls to every endpoint in contracts/api.md, exposing `error` and `message` from error bodies
-- [ ] T050 [US1] Add Vite in middleware mode to `server/index.ts` so `npm run dev` serves API and UI on one port (research.md D14)
-- [ ] T051 [US1] Create article list page in `web/src/pages/WriterList.tsx`: articles with status, create form (title, slug, body, tags), shows the final slug returned
-- [ ] T052 [US2] Create editor in `web/src/pages/Editor.tsx`: Markdown textarea and preview (marked + DOMPurify), save with `expectedDraftVersion`, show the `STALE_DRAFT` message and the current draft
-- [ ] T053 [US1] Add publish and unpublish buttons to `web/src/pages/Editor.tsx`, showing `ARTICLE_NOT_PUBLISHED` and `STALE_DRAFT` messages
-- [ ] T054 [US4] Create history panel in `web/src/components/HistoryPanel.tsx`: versions newest first, open one, restore with a warning that the draft will be replaced, delete with the `LIVE_VERSION_DELETE_FORBIDDEN` message
-- [ ] T055 [P] [US1] Create public pages `web/src/pages/PublicList.tsx` and `web/src/pages/PublicArticle.tsx` (rendered Markdown, "not found" on 404)
+- [X] T048 [P] [US1] Create `web/index.html`, `web/src/main.tsx` and `web/src/App.tsx` with routes for writer pages and public pages
+- [X] T049 [P] [US1] Create `web/src/api.ts`: calls to every endpoint in contracts/api.md, exposing `error` and `message` from error bodies
+- [X] T050 [US1] Add Vite in middleware mode to `server/index.ts` so `npm run dev` serves API and UI on one port (research.md D14)
+- [X] T051 [US1] Create article list page in `web/src/pages/WriterList.tsx`: articles with status, create form (title, slug, body, tags), shows the final slug returned
+- [X] T052 [US2] Create editor in `web/src/pages/Editor.tsx`: Markdown textarea and preview (marked + DOMPurify), save with `expectedDraftVersion`, show the `STALE_DRAFT` message and the current draft
+- [X] T053 [US1] Add publish and unpublish buttons to `web/src/pages/Editor.tsx`, showing `ARTICLE_NOT_PUBLISHED` and `STALE_DRAFT` messages
+- [X] T054 [US4] Create history panel in `web/src/components/HistoryPanel.tsx`: versions newest first, open one, restore with a warning that the draft will be replaced, delete with the `LIVE_VERSION_DELETE_FORBIDDEN` message
+- [X] T055 [P] [US1] Create public pages `web/src/pages/PublicList.tsx` and `web/src/pages/PublicArticle.tsx` (rendered Markdown, "not found" on 404)
 
 **Checkpoint**: `npm run dev` shows the writer and public pages; all tests still pass.
 
