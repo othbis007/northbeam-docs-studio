@@ -1,5 +1,5 @@
 import type { Db } from '../db/connection.js';
-import { notFound, slugTaken, staleDraft, validationError } from './errors.js';
+import { articleNotPublished, notFound, slugTaken, staleDraft, validationError } from './errors.js';
 
 // Every lifecycle rule lives here (plan.md); the database enforces the same
 // rules a second time (schema.sql).
@@ -222,6 +222,18 @@ export function createArticleService(db: Db): ArticleService {
     return get(id);
   }
 
+  // T028 (FR-006; research.md D9): only the status changes; reference and date stay.
+  function unpublish(id: number): Article {
+    const result = db
+      .prepare("UPDATE articles SET status = 'unpublished' WHERE id = ? AND status = 'published'")
+      .run(id);
+    if (result.changes === 0) {
+      findRow(id);
+      throw articleNotPublished();
+    }
+    return get(id);
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -235,7 +247,7 @@ export function createArticleService(db: Db): ArticleService {
     list,
     saveDraft,
     publish,
-    unpublish: notImplemented,
+    unpublish,
     listVersions: notImplemented,
     getVersion: notImplemented,
     restore: notImplemented,
