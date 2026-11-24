@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node 20 and npm
+- Node 22 or later, and npm
 
 ## Setup and run
 

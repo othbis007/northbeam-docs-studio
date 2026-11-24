@@ -10,7 +10,7 @@ A writer creates and edits an article draft, publishes it into frozen numbered v
 unpublishes it, browses its history, restores and deletes versions. Readers only ever see
 the version an article refers to, and only while the article is published.
 
-Technical approach: a TypeScript / Express API on Node 20 over a single SQLite file
+Technical approach: a TypeScript / Express API on Node 22 or later over a single SQLite file
 (better-sqlite3), with a small React + Vite UI. Routes only validate input (Zod); one
 `articleService` holds every lifecycle rule; the database enforces the same rules a second
 time with a CHECK, a composite foreign key and triggers. Every operation that changes the
@@ -18,7 +18,8 @@ draft, publishes or restores carries `expectedDraftVersion` to detect outdated c
 
 ## Technical Context
 
-**Language/Version**: TypeScript on Node 20
+**Language/Version**: TypeScript on Node 22 or later (changed from Node 20, see
+research.md D15)
 
 **Primary Dependencies**: Express (API), Zod (request validation), better-sqlite3 (database
 access), React + Vite (UI), marked + DOMPurify (Markdown preview)
@@ -27,7 +28,7 @@ access), React + Vite (UI), marked + DOMPurify (Markdown preview)
 
 **Testing**: Vitest + Supertest; lifecycle tests take priority over UI tests
 
-**Target Platform**: local Node 20 runtime and a browser
+**Target Platform**: local Node 22+ runtime and a browser
 
 **Project Type**: web application (API + small UI)
 

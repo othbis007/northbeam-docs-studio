@@ -119,6 +119,17 @@ the `/speckit-plan` input and from choices confirmed by the user during planning
 - Each test uses a fresh SQLite database with the same schema, so tests are independent
   from each other and from `npm run dev` data.
 
+## D15. Node 22 or later instead of Node 20 (agreed with the user)
+
+- **Decision**: the project targets Node 22 or later (`"engines": { "node": ">=22" }`).
+- **Rationale**: found while installing dependencies, before any code: the current
+  better-sqlite3 (13.x) requires Node 22+, and the current Vitest (5.x) requires Node
+  22.12+. With Node 20, `npm install` or `npm test` would fail from a fresh clone
+  (constitution, principle V). Node 20 is also no longer maintained.
+- **Alternatives considered**: keep Node 20 and pin older versions of better-sqlite3 and
+  Vitest; rejected to avoid outdated tooling on an unmaintained runtime.
+- **Impact**: none on spec.md (technology-agnostic) or on the constitution.
+
 ## Tradeoffs
 
 - **SQLite single writer**: only one write runs at a time. This makes atomic publish and
