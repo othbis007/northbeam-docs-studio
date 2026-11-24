@@ -3,3 +3,6 @@ dist/
 data/
 *.log
 .env*
+# Not versioned: installing from the lockfile makes npm try to compile
+# better-sqlite3 from source (research.md D16).
+package-lock.json
