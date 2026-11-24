@@ -201,6 +201,19 @@ export function createArticleService(db: Db): ArticleService {
     if (row.draft_version !== expectedDraftVersion) {
       throw staleFor(row);
     }
+    // T045 (FR-016, bonus): a draft identical to the referenced version creates no
+    // new version; an unpublished article only becomes published again.
+    if (row.last_published_version_id !== null) {
+      const ref = db
+        .prepare('SELECT title, body, tags FROM article_versions WHERE id = ?')
+        .get(row.last_published_version_id) as { title: string; body: string; tags: string };
+      if (ref.title === row.draft_title && ref.body === row.draft_body && ref.tags === row.draft_tags) {
+        if (row.status !== 'published') {
+          db.prepare("UPDATE articles SET status = 'published' WHERE id = ?").run(id);
+        }
+        return;
+      }
+    }
     const { next } = db
       .prepare('SELECT COALESCE(MAX(version_number), 0) + 1 AS next FROM article_versions WHERE article_id = ?')
       .get(id) as { next: number };
