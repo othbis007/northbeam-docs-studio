@@ -17,6 +17,16 @@ Built with Spec Kit. These files were committed before the code (see the git his
 Supporting design documents (research, data model, API contract, quickstart) are in
 [`specs/001-article-lifecycle/`](specs/001-article-lifecycle/).
 
+Sequence followed (one commit per step, visible in `git log`):
+
+1. `/speckit-constitution`: 5 core principles
+2. `/speckit-specify`: spec.md (user stories, requirements FR-001..FR-017, edge cases)
+3. `/speckit-clarify`: 5 questions answered and written back into the spec
+4. `/speckit-plan`: plan.md, research.md, data-model.md, contracts/api.md, quickstart.md
+5. `/speckit-tasks`: tasks.md (T001..T057, in phases)
+6. `/speckit-analyze`: consistency check, fixes applied to the artifacts
+7. `/speckit-implement`: one commit per task, tests written before the code they cover
+
 ## How to run
 
 Requirements: **Node 22 or later** and npm.
@@ -30,11 +40,6 @@ npm test       # runs every test (Vitest + Supertest)
 - The database is a SQLite file, `data/northbeam.db`; data is kept across restarts.
   `npm run setup` can be run again at any time: it never erases data.
 - The port can be changed with the `PORT` environment variable.
-- `package-lock.json` is intentionally not committed: when npm installs from a lockfile it
-  ignores better-sqlite3's `gypfile: false` setting and tries to compile it from source
-  (which requires Visual Studio C++ on Windows), although the package already ships
-  prebuilt binaries. Direct dependencies are pinned to exact versions in `package.json`
-  instead.
 - UI: writer pages at `http://localhost:3000/#/`, public site at `http://localhost:3000/#/public`.
 - After a change to the server code, restart `npm run dev` (the UI reloads by itself).
 
@@ -42,16 +47,51 @@ npm test       # runs every test (Vitest + Supertest)
 
 Described in [`specs/001-article-lifecycle/contracts/api.md`](specs/001-article-lifecycle/contracts/api.md).
 
-- Writer: `/api/articles` (create, list, get, save draft, publish, unpublish, versions,
-  restore, delete version).
-- Reader: `/api/public/articles` and `/api/public/articles/:slug`.
-- Errors: `400 VALIDATION_ERROR`, `409 STALE_DRAFT` (with the current draft),
-  `409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`, each with a
-  `message`. Anything not public, and unknown ids, answer `404` with no body.
+| Method | Path | What it does |
+|---|---|---|
+| `POST` | `/api/articles` | Create a draft (returns the final slug) |
+| `GET` | `/api/articles` | List all articles (writer) |
+| `GET` | `/api/articles/:id` | Get one article with its draft |
+| `PUT` | `/api/articles/:id/draft` | Save the draft (`expectedDraftVersion`) |
+| `POST` | `/api/articles/:id/publish` | Publish the draft (`expectedDraftVersion`) |
+| `POST` | `/api/articles/:id/unpublish` | Unpublish |
+| `GET` | `/api/articles/:id/versions` | List versions, newest first |
+| `GET` | `/api/articles/:id/versions/:n` | View one version |
+| `POST` | `/api/articles/:id/versions/:n/restore` | Copy a version into the draft |
+| `DELETE` | `/api/articles/:id/versions/:n` | Delete a version (refused if referenced) |
+| `GET` | `/api/public/articles` | Public list of published articles |
+| `GET` | `/api/public/articles/:slug` | Public article, from its referenced version |
+
+Errors: `400 VALIDATION_ERROR`, `409 STALE_DRAFT` (with the current draft),
+`409 LIVE_VERSION_DELETE_FORBIDDEN`, `409 ARTICLE_NOT_PUBLISHED`, each with a
+`message`. Anything not public, and unknown ids, answer `404` with no body.
 
 ## Data model and why
 
 Two tables ([`data-model.md`](specs/001-article-lifecycle/data-model.md)):
+
+```text
+articles
+  id, slug (unique, fixed), status (draft | published | unpublished),
+  draft_title, draft_body, draft_tags (JSON array),
+  draft_version (optimistic lock, starts at 1),
+  last_published_version_id (nullable FK → article_versions),
+  published_at (first publish date, nullable)
+
+article_versions                       (never updated)
+  id, article_id (FK), version_number (unique per article),
+  title, body, tags, created_at
+```
+
+Status changes:
+
+```text
+draft ──publish──▶ published ──unpublish──▶ unpublished
+                       ▲                         │
+                       └────────publish──────────┘
+```
+
+An article never goes back to `draft`.
 
 - **`articles`**: one row per article. Holds the fixed `slug`, the `status`
   (`draft`, `published`, `unpublished`), the draft (`draft_title`, `draft_body`,
@@ -97,11 +137,32 @@ tests/            lifecycle tests (service + direct SQL) and API tests (Supertes
 
 ## Tests
 
-`npm test` runs 68 tests. Lifecycle tests cover each rule of the spec through the service
-and, where the database enforces the rule, by writing directly to SQLite to show the
-database refuses it: frozen versions, atomic publish (including a simulated crash), the
-protected referenced version, restore, outdated copies, unpublish, first publish date,
-reader 404, persistence across restarts, and the two bonus features.
+`npm test` runs every test. Each invariant from the brief has its own test file; where
+the database enforces the rule, a test also writes directly to SQLite to show it refuses.
+
+| Invariant (brief) | Test file |
+|---|---|
+| A published version is never changed | `tests/lifecycle/frozen-versions.test.ts` |
+| Publish is atomic (status + reference together, crash, two connections) | `tests/lifecycle/publish-atomic.test.ts` |
+| The live version cannot be deleted | `tests/lifecycle/protected-version.test.ts` |
+| Restore does not create or remove versions | `tests/lifecycle/restore.test.ts` |
+| A stale write fails with a clear error | `tests/lifecycle/outdated-copy.test.ts` |
+| Unpublish keeps the version and `publishedAt` | `tests/lifecycle/unpublish.test.ts`, `first-publish-date.test.ts` |
+| Readers get 404 for draft-only or unpublished, never the draft | `tests/lifecycle/reader-access.test.ts` |
+| Data survives a restart | `tests/lifecycle/persistence.test.ts` |
+| API status codes and error bodies | `tests/api/writer.test.ts`, `tests/api/public.test.ts` |
+
+## Stretch goals (from the brief)
+
+Two of the brief's stretch goals were done, after every required feature passed
+(Phase 5 of tasks.md, priority P3 in the spec):
+
+- **Idempotent publish** (FR-016): publishing with no draft change creates no identical
+  version; an unpublished article simply becomes visible again.
+  Tests: `tests/lifecycle/publish-no-change.test.ts`.
+- **Slug collision handling** (FR-017): a slug already in use gets the next free suffix
+  (`-2`, `-3`...) and the writer is told the final slug.
+  Tests: `tests/lifecycle/slug-suffix.test.ts`, `tests/api/writer.test.ts`.
 
 ## Tradeoff
 
@@ -129,9 +190,10 @@ Node 22+ because the current better-sqlite3 and Vitest no longer support Node 20
 - Out of scope by design: login and roles, multiple customers, rich Markdown components,
   visual editor, file uploads, search, large pagination, caching, deployment.
 
-## Bonus features
+## Notes
 
-- Publishing without any change creates no identical version; an unpublished article simply
-  becomes visible again.
-- A slug already in use gets the next free suffix (`-2`, `-3`...), and the writer is told the
-  final slug.
+- `package-lock.json` is intentionally not committed: when npm installs from a lockfile it
+  ignores better-sqlite3's `gypfile: false` setting and tries to compile it from source
+  (which requires Visual Studio C++ on Windows), although the package already ships
+  prebuilt binaries. Direct dependencies are pinned to exact versions in `package.json`
+  instead.
