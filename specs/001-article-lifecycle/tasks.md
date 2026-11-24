@@ -139,8 +139,8 @@ the database enforces the rule, a direct SQL write that the database must refuse
 
 ## Phase 7: Delivery
 
-- [ ] T056 Write `README.md`: how to run (`npm install`, `npm run dev`, `npm test`), data model and why (data-model.md, research.md), one tradeoff paragraph (research.md "Tradeoffs"), what is missing
-- [ ] T057 Final check from a fresh clone: run quickstart.md setup and all validation scenarios, `npm test` green, data kept after restart
+- [X] T056 Write `README.md`: how to run (`npm install`, `npm run dev`, `npm test`), data model and why (data-model.md, research.md), one tradeoff paragraph (research.md "Tradeoffs"), what is missing
+- [X] T057 Final check from a fresh clone: run quickstart.md setup and all validation scenarios, `npm test` green, data kept after restart
 
 ---
 
