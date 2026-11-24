@@ -34,7 +34,7 @@ enough for one commit.
 with all constraints and triggers.
 
 - [ ] T001 Create `package.json` with dependencies from plan.md (express, zod, better-sqlite3, react, react-dom, marked, dompurify; dev: typescript, vite, vitest, supertest and needed type packages) and scripts `setup`, `postinstall` (runs `setup`), `dev` (`tsc` then `node`), `test` (`vitest run`) per research.md D13, D14
-- [ ] T002 [P] Create `tsconfig.json` for `server/` (Node 20 target, output folder for `tsc`) and `web/tsconfig.json` for the React app
+- [ ] T002 [P] Create `tsconfig.json` for `server/` (Node 22+ target, output folder for `tsc`) and `web/tsconfig.json` for the React app
 - [ ] T003 [P] Create `vitest.config.ts` at repository root covering `tests/**/*.test.ts`
 - [ ] T004 [P] Create `.gitignore` entries for `node_modules/`, the `tsc` output folder and `data/` (research.md D13)
 - [ ] T005 Write tables in `server/db/schema.sql`: `articles` and `article_versions` with CHECK on status/reference/publish date, slug format, non-empty title in both tables, UNIQUE (`article_id`, `version_number`), UNIQUE (`article_id`, `id`), composite FK ON DELETE RESTRICT — fields per data-model.md `articles.id`, `article_versions.id`, `articles.slug`, `articles.status`, `articles.draft_title`, `articles.draft_body`, `articles.draft_tags`, `articles.draft_version`, `articles.last_published_version_id`, `articles.published_at`, `article_versions.article_id`, `article_versions.version_number`, `article_versions.title`, `article_versions.body`, `article_versions.tags`, `article_versions.created_at`
