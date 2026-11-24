@@ -234,6 +234,47 @@ export function createArticleService(db: Db): ArticleService {
     return get(id);
   }
 
+  // T029 (FR-011, FR-012, FR-013; research.md D10): readers only get the referenced
+  // version of a published article; anything else is not found.
+  interface PublicRow {
+    slug: string;
+    title: string;
+    body: string;
+    tags: string;
+    published_at: string;
+  }
+
+  const publicSelect = `
+    SELECT a.slug, v.title, v.body, v.tags, a.published_at
+    FROM articles a
+    JOIN article_versions v ON v.id = a.last_published_version_id
+    WHERE a.status = 'published'
+  `;
+
+  function listPublic(): PublicSummary[] {
+    const rows = db.prepare(`${publicSelect} ORDER BY a.published_at DESC, a.id DESC`).all() as PublicRow[];
+    return rows.map((r) => ({
+      slug: r.slug,
+      title: r.title,
+      tags: JSON.parse(r.tags) as string[],
+      publishedAt: r.published_at,
+    }));
+  }
+
+  function getPublic(slug: string): PublicArticle {
+    const r = db.prepare(`${publicSelect} AND a.slug = ?`).get(slug) as PublicRow | undefined;
+    if (!r) {
+      throw notFound();
+    }
+    return {
+      slug: r.slug,
+      title: r.title,
+      body: r.body,
+      tags: JSON.parse(r.tags) as string[],
+      publishedAt: r.published_at,
+    };
+  }
+
   function list(): ArticleSummary[] {
     const rows = db
       .prepare('SELECT id, slug, status, draft_title FROM articles ORDER BY id')
@@ -252,7 +293,7 @@ export function createArticleService(db: Db): ArticleService {
     getVersion: notImplemented,
     restore: notImplemented,
     deleteVersion: notImplemented,
-    listPublic: notImplemented,
-    getPublic: notImplemented,
+    listPublic,
+    getPublic,
   };
 }
