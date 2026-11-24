@@ -111,10 +111,10 @@ the database enforces the rule, a direct SQL write that the database must refuse
 
 ## Phase 5: Bonus (only after everything above passes)
 
-- [ ] T044 [P] [US5] Test publish without changes in `tests/lifecycle/publish-no-change.test.ts`: no new version when the draft equals the referenced version; an unpublished article becomes published again without a new version (FR-016)
-- [ ] T045 [US5] Implement the comparison before insert in publish in `server/services/articleService.ts` (research.md D11)
-- [ ] T046 [P] [US6] Test slug suffix in `tests/lifecycle/slug-suffix.test.ts` and `tests/api/writer.test.ts`: second "guide" becomes "guide-2", third "guide-3", final slug returned; replace the `SLUG_TAKEN` expectations of T012 and T033 (FR-017)
-- [ ] T047 [US6] Implement retry with `-2`, `-3`... on UNIQUE failure in create in `server/services/articleService.ts` and return the final slug; `SLUG_TAKEN` is no longer returned (research.md D11)
+- [X] T044 [P] [US5] Test publish without changes in `tests/lifecycle/publish-no-change.test.ts`: no new version when the draft equals the referenced version; an unpublished article becomes published again without a new version (FR-016)
+- [X] T045 [US5] Implement the comparison before insert in publish in `server/services/articleService.ts` (research.md D11)
+- [X] T046 [P] [US6] Test slug suffix in `tests/lifecycle/slug-suffix.test.ts` and `tests/api/writer.test.ts`: second "guide" becomes "guide-2", third "guide-3", final slug returned; replace the `SLUG_TAKEN` expectations of T012 and T033 (FR-017)
+- [X] T047 [US6] Implement retry with `-2`, `-3`... on UNIQUE failure in create in `server/services/articleService.ts` and return the final slug; `SLUG_TAKEN` is no longer returned (research.md D11)
 
 **Checkpoint**: all tests pass, including bonus tests.
 

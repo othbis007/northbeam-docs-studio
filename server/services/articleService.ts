@@ -3,7 +3,6 @@ import {
   articleNotPublished,
   liveVersionDeleteForbidden,
   notFound,
-  slugTaken,
   staleDraft,
   validationError,
 } from './errors.js';
@@ -148,23 +147,26 @@ export function createArticleService(db: Db): ArticleService {
     return row;
   }
 
-  // T025 (FR-001, FR-002): create a draft; slug already in use -> SLUG_TAKEN.
+  // T025 (FR-001, FR-002): create a draft.
+  // T047 (FR-017, bonus): a slug already in use gets the next free suffix
+  // (-2, -3...); the returned article carries the final slug.
   function create(input: CreateInput): Article {
     const title = checkTitle(input.title);
     if (typeof input.slug !== 'string' || !SLUG_PATTERN.test(input.slug)) {
       throw validationError('Slug is required and may only contain lowercase letters, digits and hyphens.');
     }
     const { body, tags } = checkContent(input.body, input.tags);
-    try {
-      const result = db
-        .prepare('INSERT INTO articles (slug, draft_title, draft_body, draft_tags) VALUES (?, ?, ?, ?)')
-        .run(input.slug, title, body, JSON.stringify(tags));
-      return toArticle(findRow(Number(result.lastInsertRowid)));
-    } catch (e) {
-      if (isUniqueSlugError(e)) {
-        throw slugTaken(input.slug);
+    const insert = db.prepare('INSERT INTO articles (slug, draft_title, draft_body, draft_tags) VALUES (?, ?, ?, ?)');
+    for (let suffix = 1; ; suffix++) {
+      const slug = suffix === 1 ? input.slug : `${input.slug}-${suffix}`;
+      try {
+        const result = insert.run(slug, title, body, JSON.stringify(tags));
+        return toArticle(findRow(Number(result.lastInsertRowid)));
+      } catch (e) {
+        if (!isUniqueSlugError(e)) {
+          throw e;
+        }
       }
-      throw e;
     }
   }
 
