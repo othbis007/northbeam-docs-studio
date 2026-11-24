@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Northbeam Docs Studio</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; color: #1f2328; background: #fff; }
+      header { display: flex; gap: 1rem; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #d0d7de; }
+      header strong { margin-right: auto; }
+      main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+      label { display: block; margin: 0.5rem 0 0.25rem; font-weight: 600; }
+      input, textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 0.4rem; }
+      textarea { min-height: 16rem; font-family: ui-monospace, monospace; }
+      button { font: inherit; padding: 0.35rem 0.8rem; margin: 0.5rem 0.5rem 0 0; cursor: pointer; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 0.4rem; border-bottom: 1px solid #d0d7de; }
+      .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .preview { border: 1px solid #d0d7de; padding: 0 0.75rem; min-height: 16rem; overflow: auto; }
+      .error { color: #b42318; background: #fef3f2; padding: 0.5rem; border: 1px solid #fda29b; }
+      .info { color: #05603a; background: #ecfdf3; padding: 0.5rem; border: 1px solid #a6f4c5; }
+      .muted { color: #57606a; }
+      @media (max-width: 700px) { .columns { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
