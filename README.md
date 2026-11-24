@@ -185,6 +185,14 @@ Node 22+ because the current better-sqlite3 and Vitest no longer support Node 20
 - **No automated UI tests.** The UI was type-checked and served, but it has no tests;
   lifecycle and API tests were prioritised.
 - **No truly parallel concurrency test** (see Tradeoff).
+- **Writer-side 404s have no body.** Every `404` (reader and writer) answers with no body,
+  one uniform rule (research.md D10). For readers this is deliberate: a draft-only,
+  unpublished or unknown slug must look the same, so nothing reveals that an article
+  exists. On the writer side there is nothing to hide, so with more time I would return
+  `{ "error": "NOT_FOUND", "message": "..." }` there, following the Spec Kit workflow:
+  update the spec (`/speckit-specify`), then the plan and API contract (`/speckit-plan`),
+  then the tasks (`/speckit-tasks`), check consistency (`/speckit-analyze`), and only then
+  implement it, test first (`/speckit-implement`).
 - **No production build of the UI**: the UI is served by Vite in development mode
   (production deployment is out of scope).
 - Out of scope by design: login and roles, multiple customers, rich Markdown components,
