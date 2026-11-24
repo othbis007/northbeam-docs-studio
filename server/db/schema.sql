@@ -45,3 +45,47 @@ CREATE TABLE IF NOT EXISTS article_versions (
   UNIQUE (article_id, version_number),
   UNIQUE (article_id, id)
 );
+
+-- Triggers (research.md D5)
+
+-- FR-014: a published version never changes
+CREATE TRIGGER IF NOT EXISTS article_versions_no_update
+BEFORE UPDATE ON article_versions
+BEGIN
+  SELECT RAISE(ABORT, 'VERSION_IMMUTABLE');
+END;
+
+-- FR-005: the first publish date never changes once set
+CREATE TRIGGER IF NOT EXISTS articles_published_at_fixed
+BEFORE UPDATE OF published_at ON articles
+WHEN OLD.published_at IS NOT NULL AND NEW.published_at IS NOT OLD.published_at
+BEGIN
+  SELECT RAISE(ABORT, 'PUBLISHED_AT_IMMUTABLE');
+END;
+
+-- FR-015: an article never goes back to draft
+CREATE TRIGGER IF NOT EXISTS articles_no_return_to_draft
+BEFORE UPDATE OF status ON articles
+WHEN OLD.status <> 'draft' AND NEW.status = 'draft'
+BEGIN
+  SELECT RAISE(ABORT, 'NO_RETURN_TO_DRAFT');
+END;
+
+-- FR-010: every draft change increases draft_version by exactly one
+CREATE TRIGGER IF NOT EXISTS articles_draft_version_step
+BEFORE UPDATE ON articles
+WHEN (NEW.draft_title IS NOT OLD.draft_title
+      OR NEW.draft_body IS NOT OLD.draft_body
+      OR NEW.draft_tags IS NOT OLD.draft_tags)
+  AND NEW.draft_version IS NOT OLD.draft_version + 1
+BEGIN
+  SELECT RAISE(ABORT, 'DRAFT_VERSION_STEP');
+END;
+
+-- FR-002: the slug never changes after creation
+CREATE TRIGGER IF NOT EXISTS articles_slug_fixed
+BEFORE UPDATE OF slug ON articles
+WHEN NEW.slug IS NOT OLD.slug
+BEGIN
+  SELECT RAISE(ABORT, 'SLUG_IMMUTABLE');
+END;
