@@ -50,6 +50,16 @@ Not included: login and roles, multiple customers, rich Markdown
 components, visual editor, file uploads, search, large pagination,
 caching, deployment."
 
+## Clarifications
+
+### Session 2026-11-23
+
+- Q: Should the outdated-copy protection also apply to publishing and restoring, not only to saving the draft? → A: Yes. Saving, publishing and restoring are all refused when the writer acts from an outdated copy of the draft.
+- Q: Which fields are required when creating an article? → A: Title and slug are required; body and tags may be empty.
+- Q: Which characters can a slug contain? → A: Only lowercase letters, digits and hyphens; any other slug is refused with a clear message.
+- Q: In what order do published articles appear in the public list? → A: By first publish date, newest first.
+- Q: What happens when the writer unpublishes an article that is not currently published (never published or already unpublished)? → A: Refused with a clear message in both cases.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Create, publish and read an article (Priority: P1)
@@ -204,9 +214,11 @@ gets the "-2" suffix and the writer is told.
 - A reader asks for a slug that is draft-only, unpublished, or does not exist: the
   answer is the same "not found" in all three cases.
 - A version is restored while someone else holds an older copy of the draft: that
-  person's next save is refused.
-- The writer unpublishes an article that was never published: refused with a clear
-  message (A6).
+  person's next save, publish or restore is refused.
+- The writer publishes from an outdated copy of the draft (another session changed
+  the draft meanwhile): the publish is refused and no version is created.
+- The writer unpublishes an article that is not currently published (never
+  published or already unpublished): refused with a clear message, nothing changes.
 - The writer tries to delete the version the article refers to after unpublishing:
   refused.
 
@@ -215,8 +227,12 @@ gets the "-2" suffix and the writer is told.
 ### Functional Requirements
 
 - **FR-001**: The writer MUST be able to create an article with a title, a slug, a
-  Markdown body and tags; it starts as a draft.
-- **FR-002**: The slug MUST NOT change after creation.
+  Markdown body and tags; it starts as a draft. Title and slug are required; body
+  and tags may be empty. A creation without a title or a slug MUST be refused with a
+  clear message.
+- **FR-002**: The slug MUST NOT change after creation. A slug MUST contain only
+  lowercase letters, digits and hyphens; any other slug MUST be refused with a
+  clear message.
 - **FR-003**: The writer MUST be able to edit the draft (title, body, tags) any
   number of times without changing what readers see.
 - **FR-004**: Publishing MUST create the next numbered version (1, 2, 3...) from the
@@ -224,7 +240,9 @@ gets the "-2" suffix and the writer is told.
 - **FR-005**: The first publish date MUST be recorded on the first publish and MUST
   NOT change on later publishes or unpublishes.
 - **FR-006**: Unpublishing MUST make the article invisible to readers while keeping
-  the version it refers to and the first publish date.
+  the version it refers to and the first publish date. Unpublishing an article that
+  is not currently published (never published or already unpublished) MUST be
+  refused with a clear message.
 - **FR-007**: The writer MUST be able to list all versions of an article, newest
   first, and open any of them.
 - **FR-008**: Restoring a version MUST replace the draft with that version's content,
@@ -232,10 +250,11 @@ gets the "-2" suffix and the writer is told.
 - **FR-009**: The writer MUST be able to delete a version that is not the one the
   article refers to; deleting the referenced version MUST be refused with a clear
   message.
-- **FR-010**: A save based on an outdated copy of the draft MUST be refused with a
-  clear message, and MUST NOT overwrite the current draft.
+- **FR-010**: A save, a publish or a restore based on an outdated copy of the draft
+  MUST be refused with a clear message, and MUST NOT change the draft, the versions
+  or what readers see.
 - **FR-011**: Readers MUST be able to list published articles with title, tags and
-  first publish date.
+  first publish date, ordered by first publish date, newest first.
 - **FR-012**: Readers MUST be able to read a published article by its slug, always
   from the version it refers to, never from the draft.
 - **FR-013**: Any article that is not currently published MUST be reported to
@@ -270,8 +289,8 @@ gets the "-2" suffix and the writer is told.
 - **SC-003**: 100% of attempts to delete the version an article refers to are refused.
 - **SC-004**: 100% of restores leave the list of versions identical (same count,
   same numbers, same content).
-- **SC-005**: 100% of saves based on an outdated copy of the draft are refused with a
-  clear message, and the current draft is unchanged.
+- **SC-005**: 100% of saves, publishes and restores based on an outdated copy of the
+  draft are refused with a clear message, and the current draft is unchanged.
 - **SC-006**: After any unpublish, the last published version and the first publish
   date are still available to the writer in 100% of cases.
 - **SC-007**: 0 cases where a reader sees draft content, and 100% of non-published
@@ -281,12 +300,15 @@ gets the "-2" suffix and the writer is told.
 
 - A1: One writer, but two sessions (for example two browser tabs) can edit the same
   draft at the same time.
-- A2: Title and slug are required at creation; body and tags may be empty.
-- A3: A slug contains only lowercase letters, digits and hyphens.
-- A4: The public list is ordered by first publish date, newest first.
+- A2: Confirmed in Clarifications and moved to FR-001 (title and slug required;
+  body and tags may be empty).
+- A3: Confirmed in Clarifications and moved to FR-002 (lowercase letters, digits and
+  hyphens only).
+- A4: Confirmed in Clarifications and moved to FR-011 (first publish date, newest
+  first).
 - A5: A version holds title, body and tags; the slug is not part of a version since
   it never changes.
-- A6: Unpublishing an article that was never published is refused with a clear
-  message.
+- A6: Confirmed in Clarifications and moved to FR-006 (unpublishing an article that
+  is not currently published is refused).
 - Out of scope: login and roles, multiple customers, rich Markdown components,
   visual editor, file uploads, search, large pagination, caching, deployment.
