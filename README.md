@@ -5,9 +5,17 @@ publishes it into **frozen, numbered versions**, can unpublish, browse the histo
 restore and delete versions. Anonymous readers only ever see the version an article
 refers to, and only while the article is published.
 
-Built with Spec-Driven Development (Spec Kit): the constitution, spec, plan and tasks
-were committed before the code. See [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
-and [`specs/001-article-lifecycle/`](specs/001-article-lifecycle/).
+## Spec-Driven Development artifacts
+
+Built with Spec Kit. These files were committed before the code (see the git history):
+
+- Constitution: [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
+- Spec: [`specs/001-article-lifecycle/spec.md`](specs/001-article-lifecycle/spec.md)
+- Plan: [`specs/001-article-lifecycle/plan.md`](specs/001-article-lifecycle/plan.md)
+- Tasks: [`specs/001-article-lifecycle/tasks.md`](specs/001-article-lifecycle/tasks.md)
+
+Supporting design documents (research, data model, API contract, quickstart) are in
+[`specs/001-article-lifecycle/`](specs/001-article-lifecycle/).
 
 ## How to run
 
